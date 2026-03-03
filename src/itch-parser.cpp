@@ -3,6 +3,7 @@
 #include <ostream>
 
 #include <cstdint>
+#include <vector>
 #include <arpa/inet.h>
 
 uint64_t read6ByteBigEndian(const char *bytes) {
@@ -52,10 +53,14 @@ void printNHex(int n, FILE *file) {
     }
 }
 
-SystemEventMessage readSystemEventMessage(FILE *binary_read) {
-    SystemEventMessage message{};
-    fread(&message, sizeof(message), 1, binary_read);
+SystemEventMessage readSystemEventMessage(FILE *binary_read, int messageLength) {
 
+    std::vector<char> buffer(messageLength - 1);
+    fread(buffer.data(), buffer.size(), 1, binary_read);
+
+    return {};
+
+    SystemEventMessage message{};
     message.stockLocate = ntohs(message.stockLocate);
     message.trackingNumber = ntohs(message.trackingNumber);
 
@@ -73,9 +78,13 @@ SystemEventMessage readSystemEventMessage(FILE *binary_read) {
     return message;
 }
 
-StockDirectoryMessage readStockDirectoryMessage(FILE *binary_read) {
+StockDirectoryMessage readStockDirectoryMessage(FILE *binary_read, int messageLength) {
+    std::vector<char> buffer(messageLength - 1);
+    fread(buffer.data(), buffer.size(), 1, binary_read);
+
+    return {};
+
     StockDirectoryMessage message{};
-    fread(&message, sizeof(message), 1, binary_read);
 
     message.stockLocate = ntohs(message.stockLocate);
     message.trackingNumber = ntohs(message.trackingNumber);
@@ -93,13 +102,13 @@ StockDirectoryMessage readStockDirectoryMessage(FILE *binary_read) {
     return message;
 }
 
-void readMessageOfType(char messageType, FILE *binary_read) {
+void readMessageOfType(char messageType, FILE *binaryRead, int messageLength) {
     switch (messageType) {
         case 'S':
-            readSystemEventMessage(binary_read);
+            readSystemEventMessage(binaryRead, messageLength);
             break;
         case 'R':
-            readStockDirectoryMessage(binary_read);
+            readStockDirectoryMessage(binaryRead, messageLength);
             break;
     }
 }
@@ -113,7 +122,7 @@ int main() {
 
     std::cout << "Struct size: " << sizeof(StockDirectoryMessage) << std::endl;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 10000; i++) {
         short messageLengthBE;
 
         fread(&messageLengthBE, sizeof(messageLengthBE), 1, binary_read);
@@ -128,7 +137,7 @@ int main() {
 
         std::cout << "Message type: " << messageType << std::endl;
 
-        readMessageOfType(*messageType, binary_read);
+        readMessageOfType(*messageType, binary_read, messageLength);
 
         // printNHex(10, binary_read);
     }
