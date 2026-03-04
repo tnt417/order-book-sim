@@ -187,6 +187,49 @@ OrderExecutedMessage parseOrderExecutedMessage(FILE *binary_read, int messageLen
     return message;
 }
 
+OrderDeleteMessage parseOrderDeleteMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    OrderDeleteMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.orderReferenceNumber = read_u64_be(buffer + 10);
+
+    return message;
+}
+
+OrderCancelMessage parseOrderCancelMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    OrderCancelMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.orderReferenceNumber = read_u64_be(buffer + 10);
+    message.cancelledShares = read_u32_be(buffer + 18);
+
+    return message;
+}
+
+OrderReplaceMessage parseOrderReplaceMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    OrderReplaceMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.originalOrderReferenceNumber = read_u64_be(buffer + 10);
+    message.newOrderReferenceNumber = read_u64_be(buffer + 18);
+    message.shares = read_u32_be(buffer + 26);
+    message.price = read_u32_be(buffer + 30);
+
+    return message;
+}
+
 void readNextMessage(FILE *binaryRead, int messageLength) {
     char messageType;
 
@@ -212,8 +255,22 @@ void readNextMessage(FILE *binaryRead, int messageLength) {
             break;
         case 'F':
             parseAddOrderAttribMessage(binaryRead, messageLength);
+            break;
         case 'E':
             parseOrderExecutedMessage(binaryRead, messageLength);
+            break;
+        case 'L':
+            parseMarketParticipantPositionMessage(binaryRead, messageLength);
+            break;
+        case 'D':
+            parseOrderDeleteMessage(binaryRead, messageLength);
+            break;
+        case 'X':
+            parseOrderCancelMessage(binaryRead, messageLength);
+            break;
+        case 'U':
+            parseOrderReplaceMessage(binaryRead, messageLength);
+            break;
         default:
             // TODO: Market-wide circuit breaker messaging
             std::cout << "Unknown message type " << messageType << std::endl;

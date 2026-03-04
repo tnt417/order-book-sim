@@ -86,3 +86,28 @@ struct OrderExecutedMessage {
     uint32_t executedShares;
     uint64_t matchNumber;
 };
+
+struct OrderDeleteMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t orderReferenceNumber;
+};
+
+struct OrderCancelMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t orderReferenceNumber;
+    uint32_t cancelledShares;
+};
+
+struct OrderReplaceMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t originalOrderReferenceNumber;
+    uint64_t newOrderReferenceNumber;
+    uint32_t shares;
+    uint32_t price;
+};
