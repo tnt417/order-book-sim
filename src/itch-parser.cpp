@@ -438,10 +438,21 @@ int main() {
         return 1;
     }
 
-    for (int i = 0; i < 100000000; i++) {
+    long numMessages = 0;
+
+    while(true) {
         short messageLengthBE;
 
-        fread(&messageLengthBE, sizeof(messageLengthBE), 1, binary_read);
+        int bytes_read;
+        if((bytes_read = fread(&messageLengthBE, sizeof(messageLengthBE), 1, binary_read)) < 1) {
+            break;
+        }
+
+        numMessages++;
+
+        if (numMessages % 1000000 == 0) {
+            printf("%ld\n", numMessages);
+        }
 
         short messageLength = ntohs(messageLengthBE);
 
@@ -449,6 +460,8 @@ int main() {
 
         readNextMessage(binary_read, messageLength);
     }
+
+    printf("%ld\n", numMessages);
 
     return 0;
 }
