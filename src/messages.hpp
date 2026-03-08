@@ -1,3 +1,5 @@
+#include <cstdint>
+
 // Structs found at https://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHSpecification.pdf
 struct SystemEventMessage {
     uint16_t stockLocate;
@@ -110,4 +112,27 @@ struct OrderReplaceMessage {
     uint64_t newOrderReferenceNumber;
     uint32_t shares;
     uint32_t price;
+};
+
+struct TradeMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t orderReferenceNumber;
+    char buySellIndicator;
+    uint32_t shares;
+    char stock[8];
+    uint32_t price;
+    uint64_t matchNumber;
+};
+
+struct OrderExecutedWithPriceMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t orderReferenceNumber;
+    uint32_t executedShares;
+    uint64_t matchNumber;
+    char printable;
+    uint32_t executionPrice;
 };

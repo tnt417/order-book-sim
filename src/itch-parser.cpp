@@ -230,6 +230,41 @@ OrderReplaceMessage parseOrderReplaceMessage(FILE *binary_read, int messageLengt
     return message;
 }
 
+TradeMessage parseTradeMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    TradeMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.orderReferenceNumber = read_u64_be(buffer + 10);
+    message.buySellIndicator = buffer[18];
+    message.shares = read_u32_be(buffer + 19);
+    memcpy(message.stock, buffer + 23, 8);
+    message.price = read_u32_be(buffer + 31);
+    message.matchNumber = read_u64_be(buffer + 35);
+
+    return message;
+}
+
+OrderExecutedWithPriceMessage parseOrderExecutedWithPriceMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    OrderExecutedWithPriceMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.orderReferenceNumber = read_u64_be(buffer + 10);
+    message.executedShares = read_u32_be(buffer + 18);
+    message.matchNumber = read_u64_be(buffer + 22);
+    message.printable = buffer[30];
+    message.executionPrice = read_u32_be(buffer + 31);
+
+    return message;
+}
+
 void readNextMessage(FILE *binaryRead, int messageLength) {
     char messageType;
 
@@ -270,6 +305,12 @@ void readNextMessage(FILE *binaryRead, int messageLength) {
             break;
         case 'U':
             parseOrderReplaceMessage(binaryRead, messageLength);
+            break;
+        case 'P':
+            parseTradeMessage(binaryRead, messageLength);
+            break;
+        case 'C':
+            parseOrderExecutedWithPriceMessage(binaryRead, messageLength);
             break;
         default:
             // TODO: Market-wide circuit breaker messaging
