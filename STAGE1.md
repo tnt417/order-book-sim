@@ -9,3 +9,15 @@ I'm learning that real-world systems consume binary data from a stream through t
 First step is to parse the NASDAQ ITCH data. This is just a stream of bits (coming from a file right now, can come from a socket connection later). Regardless the way the data is processed follows the same format.
 
 I have all the message parsing done. With this, I can get my first initial benchmark: Just parsing 268.7 million messages took 21 seconds. This is obviously gonna take longer when I actually process the messages. But I'm sure the IO operations are taking up a lot of the time here.
+
+## Stage 2
+
+Now that the parsing is all done, I need to do something with the parsed messages.
+Since I'm not interested in accounting for edge cases and more intricate market behavior, I can ignore all other types of messages except:
+* Add order (A) 
+* Add order w/ MPID (F)
+* Execute order (E)
+* Execute w/ Price (C)
+* Delete order (D)
+* Replace order (U)
+* Cancel order (X)
