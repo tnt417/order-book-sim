@@ -2,14 +2,14 @@
 #include <iostream>
 #include <ostream>
 
+#include <arpa/inet.h>
 #include <cstdint>
 #include <vector>
-#include <arpa/inet.h>
 
-#include "messages.hpp"
 #include "byte-utils.cpp"
+#include "messages.hpp"
 
-#define DO_PRINT true
+#define DO_PRINT false
 
 uint64_t read6ByteBigEndian(const char *bytes) {
     uint64_t value = 0;
@@ -30,8 +30,8 @@ void printNHex(int n, FILE *file) {
     }
 }
 
-SystemEventMessage parseSystemEventMessage(FILE *binary_read, int messageLength) {
-
+SystemEventMessage parseSystemEventMessage(FILE *binary_read,
+                                           int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -59,7 +59,8 @@ SystemEventMessage parseSystemEventMessage(FILE *binary_read, int messageLength)
     return message;
 }
 
-StockDirectoryMessage parseStockDirectoryMessage(FILE *binary_read, int messageLength) {
+StockDirectoryMessage parseStockDirectoryMessage(FILE *binary_read,
+                                                 int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -74,7 +75,7 @@ StockDirectoryMessage parseStockDirectoryMessage(FILE *binary_read, int messageL
     message.roundLotSize = read_u32_be(buffer + 20);
     message.roundLotsOnly = buffer[24];
     message.issueClassification = buffer[25];
-    memcpy(message.issueSubType, buffer+26, 2);
+    memcpy(message.issueSubType, buffer + 26, 2);
     message.authenticity = buffer[28];
     message.shortSaleThresholdIndicator = buffer[29];
     message.ipoFlag = buffer[30];
@@ -86,7 +87,8 @@ StockDirectoryMessage parseStockDirectoryMessage(FILE *binary_read, int messageL
     return message;
 }
 
-StockTradingActionMessage parseStockTradingActionMessage(FILE *binary_read, int messageLength) {
+StockTradingActionMessage parseStockTradingActionMessage(FILE *binary_read,
+                                                         int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -116,7 +118,8 @@ ShortSaleMessage parseShortSaleMessage(FILE *binary_read, int messageLength) {
     return message;
 }
 
-MarketParticipantPositionMessage parseMarketParticipantPositionMessage(FILE *binary_read, int messageLength) {
+MarketParticipantPositionMessage
+parseMarketParticipantPositionMessage(FILE *binary_read, int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -132,7 +135,7 @@ MarketParticipantPositionMessage parseMarketParticipantPositionMessage(FILE *bin
 
     std::string mpid_str(message.mpid, 4);
 
-    std::cout << "Found market maker " << mpid_str << std::endl;
+    // std::cout << "Found market maker " << mpid_str << std::endl;
 
     return message;
 }
@@ -154,7 +157,8 @@ AddOrderMessage parseAddOrderMessage(FILE *binary_read, int messageLength) {
     return message;
 }
 
-AddOrderAttribMessage parseAddOrderAttribMessage(FILE *binary_read, int messageLength) {
+AddOrderAttribMessage parseAddOrderAttribMessage(FILE *binary_read,
+                                                 int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -172,7 +176,8 @@ AddOrderAttribMessage parseAddOrderAttribMessage(FILE *binary_read, int messageL
     return message;
 }
 
-OrderExecutedMessage parseOrderExecutedMessage(FILE *binary_read, int messageLength) {
+OrderExecutedMessage parseOrderExecutedMessage(FILE *binary_read,
+                                               int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -187,7 +192,8 @@ OrderExecutedMessage parseOrderExecutedMessage(FILE *binary_read, int messageLen
     return message;
 }
 
-OrderDeleteMessage parseOrderDeleteMessage(FILE *binary_read, int messageLength) {
+OrderDeleteMessage parseOrderDeleteMessage(FILE *binary_read,
+                                           int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -200,7 +206,8 @@ OrderDeleteMessage parseOrderDeleteMessage(FILE *binary_read, int messageLength)
     return message;
 }
 
-OrderCancelMessage parseOrderCancelMessage(FILE *binary_read, int messageLength) {
+OrderCancelMessage parseOrderCancelMessage(FILE *binary_read,
+                                           int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -214,7 +221,8 @@ OrderCancelMessage parseOrderCancelMessage(FILE *binary_read, int messageLength)
     return message;
 }
 
-OrderReplaceMessage parseOrderReplaceMessage(FILE *binary_read, int messageLength) {
+OrderReplaceMessage parseOrderReplaceMessage(FILE *binary_read,
+                                             int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -248,7 +256,8 @@ TradeMessage parseTradeMessage(FILE *binary_read, int messageLength) {
     return message;
 }
 
-OrderExecutedWithPriceMessage parseOrderExecutedWithPriceMessage(FILE *binary_read, int messageLength) {
+OrderExecutedWithPriceMessage
+parseOrderExecutedWithPriceMessage(FILE *binary_read, int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
 
@@ -261,6 +270,95 @@ OrderExecutedWithPriceMessage parseOrderExecutedWithPriceMessage(FILE *binary_re
     message.matchNumber = read_u64_be(buffer + 22);
     message.printable = buffer[30];
     message.executionPrice = read_u32_be(buffer + 31);
+
+    return message;
+}
+
+CrossTradeMessage parseCrossTradeMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    CrossTradeMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.shares = read_u64_be(buffer + 10);
+    memcpy(message.stock, buffer + 18, 8);
+    message.crossPrice = read_u32_be(buffer + 26);
+    message.matchNumber = read_u64_be(buffer + 30);
+    message.crossType = buffer[38];
+
+    return message;
+}
+
+NetOrderImbalanceIndicatorMessage
+parseNetOrderImbalanceIndicatorMessage(FILE *binary_read, int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    NetOrderImbalanceIndicatorMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.pairedShares = read_u64_be(buffer + 10);
+    message.imbalanceShares = read_u64_be(buffer + 18);
+    memcpy(message.stock, buffer + 27, 8);
+    message.farPrice = read_u32_be(buffer + 35);
+    message.nearPrice = read_u32_be(buffer + 39);
+    message.currentReferencePrice = read_u32_be(buffer + 43);
+    message.crossType = buffer[47];
+    message.priceVariationIndicator = buffer[48];
+
+    return message;
+}
+
+MwcbDeclineLevelMessage parseMwcbDeclineLevelMessage(FILE *binary_read,
+                                                     int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    MwcbDeclineLevelMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    message.level1 = read_u64_be(buffer + 10);
+    message.level2 = read_u64_be(buffer + 18);
+    message.level3 = read_u64_be(buffer + 26);
+
+    return message;
+}
+
+QuotingPeriodUpdateMessage parseQuotingPeriodUpdateMessage(FILE *binary_read,
+                                                           int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    QuotingPeriodUpdateMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    memcpy(message.stock, buffer + 10, 8);
+    message.ipoQuotationReleaseTime = read_u32_be(buffer + 18);
+    message.ipoQuotationReleaseQualifier = buffer[22];
+    message.ipoPrice = read_u32_be(buffer + 23);
+
+    return message;
+}
+
+LULDAuctionCollarMessage parseLULDAuctionCollarMessage(FILE *binary_read,
+                                                       int messageLength) {
+    unsigned char buffer[messageLength - 1];
+    fread(buffer, sizeof(buffer), 1, binary_read);
+
+    LULDAuctionCollarMessage message;
+    message.stockLocate = read_u16_be(buffer);
+    message.trackingNumber = read_u16_be(buffer + 2);
+    message.timestamp = read_u48_be(buffer + 4);
+    memcpy(message.stock, buffer + 10, 8);
+    message.auctionCollarReferencePrice = read_u32_be(buffer + 18);
+    message.upperAuctionCollarPrice = read_u32_be(buffer + 22);
+    message.lowerAuctionCollarPrice = read_u32_be(buffer + 26);
+    message.auctionCollarExtension = read_u32_be(buffer + 30);
 
     return message;
 }
@@ -312,10 +410,24 @@ void readNextMessage(FILE *binaryRead, int messageLength) {
         case 'C':
             parseOrderExecutedWithPriceMessage(binaryRead, messageLength);
             break;
+        case 'Q':
+            parseCrossTradeMessage(binaryRead, messageLength);
+            break;
+        case 'I':
+            parseNetOrderImbalanceIndicatorMessage(binaryRead, messageLength);
+            break;
+        case 'V':
+            parseMwcbDeclineLevelMessage(binaryRead, messageLength);
+            break;
+        case 'K':
+            parseQuotingPeriodUpdateMessage(binaryRead, messageLength);
+            break;
+        case 'J':
+            parseLULDAuctionCollarMessage(binaryRead, messageLength);
+            break;
         default:
-            // TODO: Market-wide circuit breaker messaging
             std::cout << "Unknown message type " << messageType << std::endl;
-            fseek(binaryRead, messageLength-1, SEEK_CUR);
+            fseek(binaryRead, messageLength - 1, SEEK_CUR);
     }
 }
 

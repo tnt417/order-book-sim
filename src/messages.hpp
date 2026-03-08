@@ -136,3 +136,60 @@ struct OrderExecutedWithPriceMessage {
     char printable;
     uint32_t executionPrice;
 };
+
+struct CrossTradeMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint32_t shares;
+    char stock[8];
+    uint32_t crossPrice;
+    uint64_t matchNumber;
+    char crossType;
+};
+
+struct NetOrderImbalanceIndicatorMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t pairedShares;
+    uint64_t imbalanceShares;
+    char imbalanceDirection;
+    char stock[8];
+    uint32_t farPrice;
+    uint32_t nearPrice;
+    uint32_t currentReferencePrice;
+    char crossType;
+    char priceVariationIndicator;
+};
+
+struct MwcbDeclineLevelMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    uint64_t level1;
+    uint64_t level2;
+    uint64_t level3;
+};
+
+struct QuotingPeriodUpdateMessage {
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    char stock[8];
+    uint32_t ipoQuotationReleaseTime;
+    char ipoQuotationReleaseQualifier;
+    uint32_t ipoPrice;
+};
+
+struct LULDAuctionCollarMessage {
+
+    uint16_t stockLocate;
+    uint16_t trackingNumber;
+    uint64_t timestamp;
+    char stock[8];
+    uint32_t auctionCollarReferencePrice;
+    uint32_t upperAuctionCollarPrice;
+    uint32_t lowerAuctionCollarPrice;
+    uint32_t auctionCollarExtension;
+};
