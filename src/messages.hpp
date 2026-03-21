@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 
 // Structs found at https://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHSpecification.pdf

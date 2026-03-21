@@ -140,6 +140,8 @@ parseMarketParticipantPositionMessage(FILE *binary_read, int messageLength) {
     return message;
 }
 
+static uint64_t last_timestamp;
+
 AddOrderMessage parseAddOrderMessage(FILE *binary_read, int messageLength) {
     unsigned char buffer[messageLength - 1];
     fread(buffer, sizeof(buffer), 1, binary_read);
@@ -148,6 +150,15 @@ AddOrderMessage parseAddOrderMessage(FILE *binary_read, int messageLength) {
     message.stockLocate = read_u16_be(buffer);
     message.trackingNumber = read_u16_be(buffer + 2);
     message.timestamp = read_u48_be(buffer + 4);
+
+    // std::cout << "Last:" << last_timestamp << std::endl;
+    // std::cout << "Cur:" << message.timestamp << std::endl;
+    // if (last_timestamp > message.timestamp) {
+    //     std::cout << "Arrived out of order!" << std::endl;
+    // }
+
+    last_timestamp = message.timestamp;
+
     message.orderReferenceNumber = read_u64_be(buffer + 10);
     message.buySellIndicator = buffer[18];
     message.shares = read_u32_be(buffer + 19);
